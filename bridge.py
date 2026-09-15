@@ -190,10 +190,10 @@ class BridgeService:
             await self._websocket.close()
 
     async def websocket_to_http(
-            self,
-            websocket,
-            message,
-            session_id: Optional[str] = None
+        self,
+        websocket,
+        message,
+        session_id: Optional[str] = None
     ) -> Optional[str]:
         if self.http_session is None:
             raise RuntimeError("HTTP session is not initialized.")
@@ -212,9 +212,9 @@ class BridgeService:
         logger.info("WS -> HTTP: %s", self._preview_bytes(body))
 
         async with self.http_session.post(
-                self.config.mcp_http_url,
-                data=body,
-                headers=headers,
+            self.config.mcp_http_url,
+            data=body,
+            headers=headers,
         ) as response:
             logger.info(
                 "HTTP response: %s %s",
@@ -295,10 +295,10 @@ class BridgeService:
         self.status = "connecting"
 
         async with websockets.connect(
-                endpoint_url,
-                max_size=None,
-                ping_interval=self.config.ws_ping_interval,
-                ping_timeout=self.config.ws_ping_timeout,
+            endpoint_url,
+            max_size=None,
+            ping_interval=self.config.ws_ping_interval,
+            ping_timeout=self.config.ws_ping_timeout,
         ) as websocket:
             self._websocket = websocket
             self.last_error = None
@@ -408,10 +408,10 @@ class BridgeManager:
         self._lock = asyncio.Lock()
 
     async def add_endpoint_url(
-            self,
-            user_id: str,
-            xiaozhi_device_id: str,
-            endpoint_url: str,
+        self,
+        user_id: str,
+        xiaozhi_device_id: str,
+        endpoint_url: str,
     ) -> tuple[dict, bool]:
         normalized_user_id = user_id.strip()
         normalized_device_id = xiaozhi_device_id.strip()

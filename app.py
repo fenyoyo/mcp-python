@@ -3,12 +3,12 @@ import os
 from pathlib import Path
 from typing import Any, cast
 
+import  requests
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from bridge import BridgeConfig, BridgeManager, configure_logging
-
+from bridge import BridgeConfig, BridgeManager, configure_logging, logger
 
 MISSING_CREDENTIALS_MESSAGE = (
     "No default bridge configured. Add users with POST /bridges or set XIAOZHI_TOKEN / XIAOZHI_ENDPOINT_URL."
@@ -54,6 +54,26 @@ async def lifespan(app: FastAPI):
         # app_state.default_bridge = default_bridge
         app_state.bridge_config = config
         app_state.bridge_enabled = True
+
+        agents = requests.get('http://127.0.0.1:8000/api/mcp/ai-agent-list')
+        if agents.status_code == 200:
+            if agents.json().get('code') == 0:
+                agent_list = agents.json().get('data', [])
+                for agent in agent_list:
+                    user_id = agent.get('user_id')
+                    xiaozhi_device_id = agent.get('id')
+                    endpoint_url = agent.get('endpoint_url')
+                    if user_id and xiaozhi_device_id and endpoint_url:
+                        try:
+                            await manager.add_endpoint_url(
+                                user_id=str(user_id),
+                                xiaozhi_device_id=str(xiaozhi_device_id),
+                                endpoint_url=endpoint_url,
+                            )
+                        except ValueError as exc:
+                            logger.error(f"Failed to add bridge for user {user_id}: {exc}")
+
+        #TODO 这里获取api接口的待连接列表，循环遍历
     else:
         app_state.bridge_error = MISSING_CREDENTIALS_MESSAGE
 
